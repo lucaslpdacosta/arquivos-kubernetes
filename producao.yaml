@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: producao
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deploy-producao
+  namespace: producao
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-producao
+  template:
+    metadata:
+      labels:
+        app: backend-producao
+    spec:
+      containers:
+      - name: backend
+        image: lucaslpdacosta/backend-producao
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service-producao
+  namespace: producao
+spec:
+  selector:
+    app: backend-producao
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-producao-backend
+  namespace: producao
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: backproducao.10.48.9.22.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service-producao
+            port:
+              number: 3000
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: producao
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deploy-producao
+  namespace: producao
+  labels:
+    app: producao
+spec:
+  selector:
+    matchLabels:
+      app: frontend-producao
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend-producao
+    spec:
+      containers:
+      - name: frontend
+        image: lucaslpdacosta/frontend-producao
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service-producao
+  namespace: producao
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend-producao
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-producao-frontend
+  namespace: producao
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: frontproducao.10.48.8.15.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service-producao
+            port:
+              number: 80

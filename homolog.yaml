@@ -1,0 +1,115 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homolog
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deploy-homolog
+  namespace: homolog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-homolog
+  template:
+    metadata:
+      labels:
+        app: backend-homolog
+    spec:
+      containers:
+      - name: backend
+        image: lucaslpdacosta/backend-homolog
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service-homolog
+  namespace: homolog
+spec:
+  selector:
+    app: backend-homolog
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-homolog-backend
+  namespace: homolog
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: backhomolog.10.48.8.15.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service-homolog
+            port:
+              number: 3000
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: homolog
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deploy-homolog
+  namespace: homolog
+  labels:
+    app: homolog
+spec:
+  selector:
+    matchLabels:
+      app: frontend-homolog
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: frontend-homolog
+    spec:
+      containers:
+      - name: frontend
+        image: lucaslpdacosta/frontend-homolog
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service-homolog
+  namespace: homolog
+spec:
+  type: ClusterIP
+  selector:
+    app: frontend-homolog
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-homolog-frontend
+  namespace: homolog
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: fronthomolog.10.48.9.22.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service-homolog
+            port:
+              number: 80

@@ -1,0 +1,11 @@
+FROM node:latest
+
+WORKDIR /app
+
+RUN apt-get update && apt-get upgrade -y && apt-get install git -y
+
+RUN git clone -b develop https://github.com/lucaslpdacosta/nuvem-backend.git .
+
+EXPOSE 3000
+
+CMD ["bash", "-c", "git pull && npm install && node index.js"]
